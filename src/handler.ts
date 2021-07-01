@@ -1,12 +1,24 @@
-const { User } = require("./models/User");
+import User from "./models/User";
+import {AGConnectCloudDB, CloudDBZoneConfig} from "@agconnect/database-server";
+import {AGCClient, CredentialParser} from "@agconnect/common-server";
 
-const clouddb = require('@agconnect/database-server/dist/index.js');
-const agconnect = require('@agconnect/common-server');
+// Init AGCClient
+const credentialPath = "/dcache/layer/func/resource/agc-apiclient-660110761581888128-6979164466034395931.json";
+AGCClient.initialize(CredentialParser.toCredential(credentialPath));
 
-let addUser = async function (event, context, callback, logger) {
+// Init CloudDB
+const agcClient = AGCClient.getInstance();
+AGConnectCloudDB.initialize(agcClient);
+
+// Define and create zone
+const zoneName = 'Foundvio';
+const cloudDBZoneConfig = new CloudDBZoneConfig(zoneName);
+const mCloudDBZone = AGConnectCloudDB.getInstance().openCloudDBZone(cloudDBZoneConfig);
+
+let addUser = async function (event: Event, context, callback, logger) {
 
     // Create Response
-    var res = new context.HTTPResponse(context.env, {
+    const res = new context.HTTPResponse(context.env, {
         "res-type": "context.env",
         "faas-content-type": "json",
     }, "application/json", "200");
@@ -19,8 +31,8 @@ let addUser = async function (event, context, callback, logger) {
         logger.info(event.body)
 
         // Create User
-        var _body = event.body;
-        var user = new User()
+        let _body = event.body;
+        let user = new User()
         user.setPhoneId(_body.phoneId)
         user.setGivenName(_body.givenName)
         user.setFamilyName(_body.familyName)
@@ -35,12 +47,12 @@ let addUser = async function (event, context, callback, logger) {
         // Perform Upsert
         try {
 
-            var response = await upsertUser(user)
+            let response = await upsertUser(user)
             logger.info("Upsert Successful => ", response)
             res.body = "Success"
-            
+
         } catch (error) {
-            
+
             logger.error("Upsert Failed => ", error)
             res.body = "Error"
         }
@@ -57,29 +69,15 @@ let addUser = async function (event, context, callback, logger) {
 
     // Upsert Function
     async function upsertUser(user) {
-
-        // Init AGCClient
-        const credentialPath = "/dcache/layer/func/resource/agc-apiclient-660110761581888128-6979164466034395931.json";
-        agconnect.AGCClient.initialize(agconnect.CredentialParser.toCredential(credentialPath));
-
-        // Init CloudDB
-        const agcClient = agconnect.AGCClient.getInstance();
-        clouddb.AGConnectCloudDB.initialize(agcClient);
-
-        // Define and create zone
-        const zoneName = 'Foundvio';
-        const cloudDBZoneConfig = new clouddb.CloudDBZoneConfig(zoneName);
-        const mCloudDBZone = clouddb.AGConnectCloudDB.getInstance().openCloudDBZone(cloudDBZoneConfig);
-
         if (!mCloudDBZone) {
             console.log("CloudDBClient is null, try re-initialize it");
             return;
         }
 
-        const resp = await this.mCloudDBZone.executeUpsert(user);
+        const resp = await mCloudDBZone.executeUpsert(user);
         return resp;
     }
 
 }
 
-module.exports.addUser = addUser;
+export = Object.assign({}, addUser);
