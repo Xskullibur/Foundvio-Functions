@@ -27,7 +27,7 @@ gulp.task('zip', gulp.series('build', function() {
         gulp.src('node_modules/**').pipe(rename(function(file) {
             file.dirname = 'node_modules/' + file.dirname;
         })),
-        gulp.src('models/**').pipe(rename(function(file) {
+        gulp.src('src/models/**').pipe(rename(function(file) {
             file.dirname = 'models/' + file.dirname;
         }))
         ).pipe(zip('handler.zip'))

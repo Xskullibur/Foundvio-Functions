@@ -15,69 +15,72 @@ const zoneName = 'Foundvio';
 const cloudDBZoneConfig = new CloudDBZoneConfig(zoneName);
 const mCloudDBZone = AGConnectCloudDB.getInstance().openCloudDBZone(cloudDBZoneConfig);
 
-let addUser = async function (event: Event, context, callback, logger) {
+module addUser{
+    let addUser = async function (event: Event, context, callback, logger) {
 
-    // Create Response
-    const res = new context.HTTPResponse(context.env, {
-        "res-type": "context.env",
-        "faas-content-type": "json",
-    }, "application/json", "200");
-
-    // Perform Upsert
-    logger.info("Request to add user...")
-
-    if (event.body) {
-
-        logger.info(event.body)
-
-        // Create User
-        let _body = event.body;
-        let user = new User()
-        user.setPhoneId(_body.phoneId)
-        user.setGivenName(_body.givenName)
-        user.setFamilyName(_body.familyName)
-        user.setIsTracker(_body.isTracker)
-
-        // Log results
-        logger.info("PhoneId: ", user.getPhoneId())
-        logger.info("Given Name: ", user.getGivenName())
-        logger.info("Family Name: ", user.getFamilyName())
-        logger.info("isTracker: ", user.getIsTracker())
+        // Create Response
+        const res = new context.HTTPResponse(context.env, {
+            "res-type": "context.env",
+            "faas-content-type": "json",
+        }, "application/json", "200");
 
         // Perform Upsert
-        try {
+        logger.info("Request to add user...")
 
-            let response = await upsertUser(user)
-            logger.info("Upsert Successful => ", response)
-            res.body = "Success"
+        if (event.body) {
 
-        } catch (error) {
+            logger.info(event.body)
 
-            logger.error("Upsert Failed => ", error)
-            res.body = "Error"
+            // Create User
+            let _body = event.body;
+            let user = new User()
+            user.setPhoneId(_body.phoneId)
+            user.setGivenName(_body.givenName)
+            user.setFamilyName(_body.familyName)
+            user.setIsTracker(_body.isTracker)
+
+            // Log results
+            logger.info("PhoneId: ", user.getPhoneId())
+            logger.info("Given Name: ", user.getGivenName())
+            logger.info("Family Name: ", user.getFamilyName())
+            logger.info("isTracker: ", user.getIsTracker())
+
+            // Perform Upsert
+            try {
+
+                let response = await upsertUser(user)
+                logger.info("Upsert Successful => ", response)
+                res.body = "Success"
+
+            } catch (error) {
+
+                logger.error("Upsert Failed => ", error)
+                res.body = "Error"
+            }
+
+        } else {
+
+            // Request Body Empty
+            logger.error("Request Body is Empty")
+            res.body = "Empty"
         }
 
-    } else {
+        // Callback
+        context.callback(res)
 
-        // Request Body Empty
-        logger.error("Request Body is Empty")
-        res.body = "Empty"
-    }
+        // Upsert Function
+        async function upsertUser(user) {
+            if (!mCloudDBZone) {
+                console.log("CloudDBClient is null, try re-initialize it");
+                return;
+            }
 
-    // Callback
-    context.callback(res)
-
-    // Upsert Function
-    async function upsertUser(user) {
-        if (!mCloudDBZone) {
-            console.log("CloudDBClient is null, try re-initialize it");
-            return;
+            const resp = await mCloudDBZone.executeUpsert(user);
+            return resp;
         }
 
-        const resp = await mCloudDBZone.executeUpsert(user);
-        return resp;
     }
-
 }
 
-export = Object.assign({}, addUser);
+const combined = Object.assign(addUser, {addUser});
+export = combined;
