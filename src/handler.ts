@@ -26,28 +26,28 @@ let addUser = async function (event, context, callback, logger) {
         user.setIsTracker(_body.isTracker)
 
         // Log results
-        logger.info("PhoneId: " + user.getPhoneId())
-        logger.info("Given Name: " + user.getGivenName())
-        logger.info("Family Name: " + user.getFamilyName())
-        logger.info("isTracker: " + user.getIsTracker())
+        logger.info(`PhoneId => ${user.getPhoneId()}`)
+        logger.info(`Given Name => ${user.getGivenName()}`)
+        logger.info(`Family Name => ${user.getFamilyName()}`)
+        logger.info(`isTracker => ${user.getIsTracker()}`)
 
         // Perform Upsert
         try {
 
             let response = await upsertUser(user)
-            logger.info("Upsert Successful => " + response)
+            logger.info(`Upsert Successful => ${response}`)
             res.body = "Success"
 
         } catch (error) {
 
-            logger.error("Upsert Failed => " + error)
+            logger.error(`Upsert Failed => ${error}`)
             res.body = "Error"
         }
 
     } else {
 
         // Request Body Empty
-        logger.error("Request Body is Empty")
+        logger.error("Upsert Failed => Request Body is Empty")
         res.body = "Empty"
     }
 

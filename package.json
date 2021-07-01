@@ -16,10 +16,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@agconnect/cloudstorage-server": "^1.0.0",
     "@agconnect/database-server": "^1.0.1",
-    "merge-stream": "^2.0.0",
-    "uuid": "^8.3.0"
+    "merge-stream": "^2.0.0"
   },
   "devDependencies": {
     "gulp": "^4.0.2",
