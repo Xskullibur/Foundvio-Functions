@@ -1,5 +1,5 @@
 import {User} from "./models/User";
-import {AGConnectCloudDB, CloudDBZoneConfig} from "@agconnect/database-server";
+import {AGConnectCloudDB, CloudDBZoneConfig} from "@agconnect/database-server/dist/index.js";
 import {AGCClient, CredentialParser} from "@agconnect/common-server";
 
 let addUser = async function (event, context, callback, logger) {
@@ -39,13 +39,15 @@ let addUser = async function (event, context, callback, logger) {
             res.body = "Success"
 
         } catch (error) {
-
             logger.error("Upsert Failed => " + error)
+            logger.error("Upsert Failed Stack => " + error.stack)
             res.body = "Error"
         }
 
     } else {
 
+
+        logger.info()
         // Request Body Empty
         logger.error("Request Body is Empty")
         res.body = "Empty"
@@ -55,7 +57,7 @@ let addUser = async function (event, context, callback, logger) {
     context.callback(res);
 
     // Upsert Function
-    async function upsertUser(user) {
+    async function upsertUser(user: User) {
         // Init AGCClient
         const credentialPath = "/dcache/layer/func/resource/agc-apiclient-660110761581888128-6979164466034395931.json";
         AGCClient.initialize(CredentialParser.toCredential(credentialPath));
